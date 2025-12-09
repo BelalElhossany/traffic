@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { TrafficNetwork, TrafficAction, SimulationResult, PredictionResult, AIRecommendation, NetworkStatus } from './types';
 
-const API_BASE_URL = 'http://localhost:12000/api/traffic';
+const API_BASE_URL = 'https://work-1-prrnhxygajyxxmlp.prod-runtime.all-hands.dev/api/traffic';
 
 const api = axios.create({
   baseURL: API_BASE_URL,

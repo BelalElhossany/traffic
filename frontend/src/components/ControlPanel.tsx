@@ -8,12 +8,17 @@ interface ControlPanelProps {
   prediction: PredictionResult | null;
   aiRecommendation: AIRecommendation | null;
   loading: boolean;
+  liveStatus?: any;
+  simulationStatus?: any;
+  dynamicSimulationRunning?: boolean;
   onRunPrediction: (durationMinutes: number) => void;
   onGetAIRecommendations: (durationMinutes: number) => void;
   onApplyGreenTimeAdjustment: (segmentId: string, adjustment: number) => void;
   onTogglePoliceControl: (segmentId: string, enable: boolean, reduction: number) => void;
   onResetActions: () => void;
   onRefreshStatus: () => void;
+  onStartDynamicSimulation?: () => void;
+  onStopDynamicSimulation?: () => void;
 }
 
 const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -23,12 +28,17 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   prediction,
   aiRecommendation,
   loading,
+  liveStatus,
+  simulationStatus,
+  dynamicSimulationRunning,
   onRunPrediction,
   onGetAIRecommendations,
   onApplyGreenTimeAdjustment,
   onTogglePoliceControl,
   onResetActions,
-  onRefreshStatus
+  onRefreshStatus,
+  onStartDynamicSimulation,
+  onStopDynamicSimulation
 }) => {
   const [predictionDuration, setPredictionDuration] = useState(60);
   const [greenTimeAdjustment, setGreenTimeAdjustment] = useState(10);
@@ -75,6 +85,64 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                   <p>Flow: {status.current_flow.toFixed(1)} veh/hr</p>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Dynamic Simulation Status */}
+      <div className="control-panel">
+        <h3>Live Simulation</h3>
+        <div style={{ marginBottom: '10px' }}>
+          {dynamicSimulationRunning ? (
+            <button 
+              className="btn btn-danger" 
+              onClick={onStopDynamicSimulation} 
+              disabled={loading}
+            >
+              Stop Live Simulation
+            </button>
+          ) : (
+            <button 
+              className="btn btn-success" 
+              onClick={onStartDynamicSimulation} 
+              disabled={loading}
+            >
+              Start Live Simulation
+            </button>
+          )}
+        </div>
+        
+        {simulationStatus && (
+          <div style={{ fontSize: '12px', marginBottom: '10px' }}>
+            <p><strong>Status:</strong> {dynamicSimulationRunning ? '🟢 Running' : '🔴 Stopped'}</p>
+            <p><strong>Simulation Time:</strong> {simulationStatus.simulation_time_formatted}</p>
+            <p><strong>Current Hour:</strong> {simulationStatus.current_hour}:00</p>
+          </div>
+        )}
+        
+        {liveStatus && (
+          <div style={{ fontSize: '12px' }}>
+            <p><strong>Total Segments:</strong> {liveStatus.total_segments}</p>
+            <p><strong>High Congestion:</strong> {liveStatus.high_congestion_count} segments</p>
+            <div style={{ marginTop: '10px' }}>
+              <strong>Live Traffic Data:</strong>
+              <div style={{ maxHeight: '200px', overflowY: 'auto', marginTop: '5px' }}>
+                {Object.entries(liveStatus.segments || {}).map(([segmentId, status]: [string, any]) => (
+                  <div key={segmentId} className="segment-info" style={{ marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '3px' }}>
+                      <span className={`status-indicator ${getCongestionStatusColor(status.congestion_level)}`}></span>
+                      <strong style={{ fontSize: '11px' }}>{status.name}</strong>
+                    </div>
+                    <div style={{ fontSize: '10px', color: '#ccc' }}>
+                      <span>Queue: {status.current_queue} | </span>
+                      <span>Flow: {status.current_flow} veh/hr | </span>
+                      <span>Util: {status.utilization_percent}%</span>
+                      {status.police_control && <span style={{ color: '#ff6b6b' }}> | 👮 Police</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}

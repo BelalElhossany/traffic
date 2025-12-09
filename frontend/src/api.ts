@@ -70,6 +70,27 @@ export const trafficApi = {
     return response.data;
   },
 
+  // Dynamic simulation
+  startDynamicSimulation: async () => {
+    const response = await api.post('/simulation/start-dynamic');
+    return response.data;
+  },
+
+  stopDynamicSimulation: async () => {
+    const response = await api.post('/simulation/stop-dynamic');
+    return response.data;
+  },
+
+  getSimulationStatus: async () => {
+    const response = await api.get('/simulation/status');
+    return response.data;
+  },
+
+  getLiveNetworkStatus: async () => {
+    const response = await api.get('/network/live-status');
+    return response.data;
+  },
+
   // Health check
   healthCheck: async () => {
     const response = await api.get('/health');

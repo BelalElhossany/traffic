@@ -9,24 +9,34 @@ import './index.css';
 function App() {
   const [network, setNetwork] = useState<TrafficNetwork | null>(null);
   const [networkStatus, setNetworkStatus] = useState<NetworkStatus | null>(null);
+  const [liveStatus, setLiveStatus] = useState<any>(null);
+  const [simulationStatus, setSimulationStatus] = useState<any>(null);
   const [selectedSegmentId, setSelectedSegmentId] = useState<string | null>(null);
   const [prediction, setPrediction] = useState<PredictionResult | null>(null);
   const [aiRecommendation, setAiRecommendation] = useState<AIRecommendation | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dynamicSimulationRunning, setDynamicSimulationRunning] = useState(false);
 
   // Initialize network on component mount
   useEffect(() => {
     initializeNetwork();
   }, []);
 
-  // Refresh network status periodically
+  // Refresh live status periodically when dynamic simulation is running
   useEffect(() => {
-    if (network) {
-      const interval = setInterval(refreshNetworkStatus, 5000);
+    if (network && dynamicSimulationRunning) {
+      const interval = setInterval(() => {
+        refreshLiveStatus();
+        refreshSimulationStatus();
+      }, 3000); // Update every 3 seconds for live data
+      return () => clearInterval(interval);
+    } else if (network) {
+      // Fallback to regular status updates when dynamic simulation is not running
+      const interval = setInterval(refreshNetworkStatus, 10000);
       return () => clearInterval(interval);
     }
-  }, [network]);
+  }, [network, dynamicSimulationRunning]);
 
   const initializeNetwork = async () => {
     try {
@@ -38,6 +48,9 @@ function App() {
       
       setNetwork(sampleNetwork);
       await refreshNetworkStatus();
+      
+      // Start dynamic simulation automatically
+      await startDynamicSimulation();
       
       console.log('Network initialized successfully');
     } catch (err) {
@@ -54,6 +67,50 @@ function App() {
       setNetworkStatus(status);
     } catch (err) {
       console.error('Failed to refresh network status:', err);
+    }
+  };
+
+  const refreshLiveStatus = async () => {
+    try {
+      const status = await trafficApi.getLiveNetworkStatus();
+      setLiveStatus(status);
+      // Also update networkStatus with live data for compatibility
+      if (status.segments) {
+        setNetworkStatus(status.segments);
+      }
+    } catch (err) {
+      console.error('Failed to refresh live status:', err);
+    }
+  };
+
+  const refreshSimulationStatus = async () => {
+    try {
+      const status = await trafficApi.getSimulationStatus();
+      setSimulationStatus(status);
+    } catch (err) {
+      console.error('Failed to refresh simulation status:', err);
+    }
+  };
+
+  const startDynamicSimulation = async () => {
+    try {
+      await trafficApi.startDynamicSimulation();
+      setDynamicSimulationRunning(true);
+      console.log('Dynamic simulation started');
+    } catch (err) {
+      console.error('Failed to start dynamic simulation:', err);
+      setError(`Failed to start dynamic simulation: ${err}`);
+    }
+  };
+
+  const stopDynamicSimulation = async () => {
+    try {
+      await trafficApi.stopDynamicSimulation();
+      setDynamicSimulationRunning(false);
+      console.log('Dynamic simulation stopped');
+    } catch (err) {
+      console.error('Failed to stop dynamic simulation:', err);
+      setError(`Failed to stop dynamic simulation: ${err}`);
     }
   };
 
@@ -173,12 +230,17 @@ function App() {
           prediction={prediction}
           aiRecommendation={aiRecommendation}
           loading={loading}
+          liveStatus={liveStatus}
+          simulationStatus={simulationStatus}
+          dynamicSimulationRunning={dynamicSimulationRunning}
           onRunPrediction={runPrediction}
           onGetAIRecommendations={getAIRecommendations}
           onApplyGreenTimeAdjustment={applyGreenTimeAdjustment}
           onTogglePoliceControl={togglePoliceControl}
           onResetActions={resetAllActions}
           onRefreshStatus={refreshNetworkStatus}
+          onStartDynamicSimulation={startDynamicSimulation}
+          onStopDynamicSimulation={stopDynamicSimulation}
         />
       </div>
 

@@ -19,25 +19,60 @@ class TrafficSimulationEngine:
     def calculate_arrivals(self, segment_id: str, current_time: int) -> float:
         """
         Calculate arrival rate for a segment based on upstream flow and demand patterns.
-        For now, using simplified demand patterns - can be enhanced with real data.
+        Enhanced with realistic time-based patterns and segment-specific factors.
         """
         segment = self.network.segments[segment_id]
         
-        # Base demand pattern (simplified - peak hours have higher demand)
+        # Enhanced time-based demand patterns
         hour_of_day = (current_time // 60) % 24
-        if 7 <= hour_of_day <= 9 or 17 <= hour_of_day <= 19:  # Peak hours
-            demand_factor = 1.5
-        elif 10 <= hour_of_day <= 16:  # Moderate traffic
-            demand_factor = 1.0
-        else:  # Off-peak
-            demand_factor = 0.6
-            
-        # Base arrival rate (can be calibrated with real data)
-        base_arrival_rate = segment.capacity * 0.8 * demand_factor
+        minute_of_hour = current_time % 60
         
-        # Add some randomness to simulate real-world variability
-        noise = np.random.normal(0, 0.1) * base_arrival_rate
-        arrival_rate = max(0, base_arrival_rate + noise)
+        # More realistic demand patterns
+        if 7 <= hour_of_day <= 9:  # Morning rush hour
+            demand_factor = 1.8 + 0.3 * np.sin((hour_of_day - 7) * np.pi / 2)
+        elif 17 <= hour_of_day <= 19:  # Evening rush hour
+            demand_factor = 1.6 + 0.4 * np.sin((hour_of_day - 17) * np.pi / 2)
+        elif 11 <= hour_of_day <= 14:  # Lunch time
+            demand_factor = 1.2
+        elif 6 <= hour_of_day <= 7 or 19 <= hour_of_day <= 21:  # Shoulder hours
+            demand_factor = 1.0
+        elif 21 <= hour_of_day <= 23:  # Evening
+            demand_factor = 0.8
+        elif 0 <= hour_of_day <= 6:  # Night/early morning
+            demand_factor = 0.3 + 0.2 * np.sin(hour_of_day * np.pi / 6)
+        else:  # Default
+            demand_factor = 0.7
+        
+        # Segment-specific factors based on location type
+        if "times_square" in segment_id or "herald_square" in segment_id:
+            # Tourist areas have different patterns
+            location_factor = 1.3 if 10 <= hour_of_day <= 22 else 0.8
+        elif "lincoln_tunnel" in segment_id or "highway" in segment_id:
+            # Commuter routes have stronger rush hour patterns
+            location_factor = 1.5 if (7 <= hour_of_day <= 9 or 17 <= hour_of_day <= 19) else 0.9
+        elif "broadway" in segment_id:
+            # Broadway has consistent high traffic
+            location_factor = 1.2
+        else:
+            location_factor = 1.0
+        
+        # Weekend vs weekday (simplified - assume weekday for now)
+        weekday_factor = 1.0
+        
+        # Weather impact
+        weather_impact = segment.weather_factor
+        
+        # Base arrival rate with all factors
+        base_arrival_rate = segment.capacity * 0.75 * demand_factor * location_factor * weekday_factor * weather_impact
+        
+        # Add realistic variability with some correlation to previous values
+        noise_amplitude = 0.15 * base_arrival_rate
+        noise = np.random.normal(0, noise_amplitude)
+        
+        # Add some minute-level variation for realism
+        minute_variation = 0.1 * np.sin(minute_of_hour * np.pi / 30) * base_arrival_rate
+        
+        arrival_rate = max(0, base_arrival_rate + noise + minute_variation)
         
         return arrival_rate * self.time_step_hours
     

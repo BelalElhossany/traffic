@@ -291,7 +291,7 @@ const GraphApp: React.FC = () => {
       .attr('stroke-width', d => Math.max(2, Math.min(8, d.utilization / 20)))
       .attr('marker-end', d => `url(#arrow-${d.congestion_level})`)
       .style('cursor', 'pointer')
-      .on('click', (event, d) => {
+      .on('click', (_, d) => {
         setSelectedEdge(d);
         setSelectedNode(null);
       });
@@ -341,7 +341,7 @@ const GraphApp: React.FC = () => {
       .attr('stroke', '#fff')
       .attr('stroke-width', 2)
       .style('cursor', 'pointer')
-      .on('click', (event, d) => {
+      .on('click', (_, d) => {
         setSelectedNode(d);
         setSelectedEdge(null);
       });

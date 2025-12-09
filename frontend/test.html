@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Page</title>
+</head>
+<body>
+    <h1>Frontend Test Page</h1>
+    <p>If you can see this, the frontend server is working!</p>
+    <script>
+        console.log('Frontend test page loaded');
+        
+        // Test API connection
+        fetch('https://work-1-prrnhxygajyxxmlp.prod-runtime.all-hands.dev/api/graph/health')
+            .then(response => response.json())
+            .then(data => {
+                console.log('API Response:', data);
+                document.body.innerHTML += '<p>API Connection: SUCCESS - ' + JSON.stringify(data) + '</p>';
+            })
+            .catch(error => {
+                console.error('API Error:', error);
+                document.body.innerHTML += '<p>API Connection: FAILED - ' + error.message + '</p>';
+            });
+    </script>
+</body>
+</html>

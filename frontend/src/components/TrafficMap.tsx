@@ -50,7 +50,6 @@ const TrafficMap: React.FC<TrafficMapProps> = ({
       center={center}
       zoom={15}
       style={{ height: '100%', width: '100%' }}
-      onClick={() => onSegmentSelect(null)}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

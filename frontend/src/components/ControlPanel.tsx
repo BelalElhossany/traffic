@@ -182,8 +182,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
               </div>
               <button
                 className="btn"
-                onClick={() => onApplyGreenTimeAdjustment(selectedSegmentId, greenTimeAdjustment)}
-                disabled={loading}
+                onClick={() => selectedSegmentId && onApplyGreenTimeAdjustment(selectedSegmentId, greenTimeAdjustment)}
+                disabled={loading || !selectedSegmentId}
               >
                 Apply Green Time +{greenTimeAdjustment}s
               </button>
@@ -213,8 +213,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
               <div>
                 <button
                   className={`btn ${selectedSegment.police_control ? 'btn-danger' : 'btn-warning'}`}
-                  onClick={() => onTogglePoliceControl(selectedSegmentId, !selectedSegment.police_control, policeReduction)}
-                  disabled={loading}
+                  onClick={() => selectedSegmentId && onTogglePoliceControl(selectedSegmentId, !selectedSegment.police_control, policeReduction)}
+                  disabled={loading || !selectedSegmentId}
                 >
                   {selectedSegment.police_control ? 'Remove Police Control' : 'Apply Police Control'}
                 </button>

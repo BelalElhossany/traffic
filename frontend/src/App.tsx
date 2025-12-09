@@ -1,7 +1,7 @@
-import SimpleApp from './SimpleApp';
+import GraphApp from './GraphApp';
 
 function App() {
-  return <SimpleApp />;
+  return <GraphApp />;
 }
 
 export default App;

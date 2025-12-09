@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import traffic
+from app.api import traffic, simple_traffic
 
 app = FastAPI(
     title="AI Traffic Congestion Prediction & Action Simulator",
@@ -19,6 +19,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(traffic.router, prefix="/api/traffic", tags=["traffic"])
+app.include_router(simple_traffic.router, prefix="/api/simple", tags=["simple-traffic"])
 
 @app.get("/")
 async def root():
